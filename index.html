@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMDb Movie Fetcher</title>
+</head>
+<body>
+    <h2>Enter TMDb Movie ID</h2>
+    <input type="text" id="tmdbId" placeholder="Enter TMDb ID">
+    <button onclick="fetchMovie()">Fetch Movie</button>
+    <div id="movieDetails"></div>
+
+    <script>
+        async function fetchMovie() {
+            const tmdbId = document.getElementById("tmdbId").value;
+            if (!tmdbId) {
+                alert("Please enter a valid TMDb ID");
+                return;
+            }
+
+            const tmdbApiKey = "55b11132b5aef36e8376418dcce756f2";
+            const response = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${tmdbApiKey}`);
+            const movie = await response.json();
+
+            if (movie.success === false) {
+                alert("Invalid TMDb ID");
+                return;
+            }
+
+            const title = movie.title;
+            const poster = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+            const link = `https://www.themoviedb.org/movie/${tmdbId}`;
+            const watchLink = `https://vidsrc.icu/movie/${tmdbId}`;
+            const format = "HD"; // Customize as needed
+
+            const movieHtml = `
+                <h3>${title}</h3>
+                <img src="${poster}" width="200">
+                <p><strong>Link:</strong> <a href="${link}" target="_blank">${link}</a></p>
+                <p><strong>Watch Link:</strong> <a href="${watchLink}" target="_blank">${watchLink}</a></p>
+                <p><strong>Format:</strong> ${format}</p>
+                <button onclick='sendToTelegram("${title}", "${link}", "${poster}", "${watchLink}", "${format}")'>Send to Telegram</button>
+                <button onclick='sendEmail("${title}", "${link}", "${poster}", "${watchLink}", "${format}")'>Send to Blogger</button>
+            `;
+
+            document.getElementById("movieDetails").innerHTML = movieHtml;
+        }
+
+        async function sendToTelegram(title, link, poster, watchLink, format) {
+            const telegramBotToken = "7687879889:AAFrS0Z9tDABNefsVrMqCx4-_IYaOw7AroM";
+            const telegramChatId = "-1002379902510";
+
+            const message = `
+                🎬 *${title}*
+                🔗 [TMDb Link](${link})
+                🖼 [Poster](${poster})
+                ▶️ [Watch Here](${watchLink})
+                🎥 *Format:* ${format}
+            `;
+
+            const url = `https://api.telegram.org/bot${telegramBotToken}/sendMessage`;
+            await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    chat_id: telegramChatId,
+                    text: message,
+                    parse_mode: "Markdown"
+                })
+            });
+
+            alert("Sent to Telegram!");
+        }
+
+        async function sendEmail(title, link, poster, watchLink, format) {
+            const email = "asatkarsarvesh39.titu@blogger.com";
+            const subject = `New Movie: ${title}`;
+            const body = `
+                <h3>${title}</h3>
+                <p><strong>Link:</strong> <a href="${link}">${link}</a></p>
+                <p><strong>Watch Link:</strong> <a href="${watchLink}">${watchLink}</a></p>
+                <p><strong>Format:</strong> ${format}</p>
+                <img src="${poster}" width="200">
+            `;
+
+            window.open(`mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, "_self");
+        }
+    </script>
+</body>
+</html>
