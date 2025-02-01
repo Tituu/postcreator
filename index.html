@@ -4,6 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TMDb Movie Fetcher</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        h2 {
+            text-align: center;
+            color: #444;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #movieDetails {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        img {
+            width: 100%;
+            max-width: 300px;
+            display: block;
+            margin: 10px 0;
+        }
+        p {
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .movie-details p {
+            margin: 5px 0;
+        }
+    </style>
 </head>
 <body>
     <h2>Enter TMDb Movie ID</h2>
@@ -33,28 +87,33 @@
             const link = `https://www.themoviedb.org/movie/${tmdbId}`;
             const watchLink = `https://vidsrc.icu/movie/${tmdbId}`;
             const format = "HD"; // Customize as needed
+            const releaseDate = movie.release_date ? movie.release_date : "N/A";
 
             const movieHtml = `
-                <h3>${title}</h3>
-                <img src="${poster}" width="200">
-                <p><strong>Link:</strong> <a href="${link}" target="_blank">${link}</a></p>
-                <p><strong>Watch Link:</strong> <a href="${watchLink}" target="_blank">${watchLink}</a></p>
-                <p><strong>Format:</strong> ${format}</p>
-                <button onclick='sendToTelegram("${title}", "${link}", "${poster}", "${watchLink}", "${format}")'>Send to Telegram</button>
-                <button onclick='sendEmail("${title}", "${link}", "${poster}", "${watchLink}", "${format}")'>Send to Blogger</button>
+                <div class="movie-details">
+                    <h3>${title}</h3>
+                    <img src="${poster}" alt="${title}">
+                    <p><strong>Link:</strong> <a href="${link}" target="_blank">${link}</a></p>
+                    <p><strong>Watch Link:</strong> <a href="${watchLink}" target="_blank">${watchLink}</a></p>
+                    <p><strong>Format:</strong> ${format}</p>
+                    <p><strong>Release Date 📅:</strong> ${releaseDate}</p>
+                    <button onclick='sendToTelegram("${title}", "${link}", "${poster}", "${watchLink}", "${format}", "${releaseDate}")'>Send to Telegram</button>
+                    <button onclick='postToBlogger("${title}", "${link}", "${poster}", "${watchLink}", "${format}", "${releaseDate}")'>Post to Blogger</button>
+                </div>
             `;
 
             document.getElementById("movieDetails").innerHTML = movieHtml;
         }
 
-        async function sendToTelegram(title, link, poster, watchLink, format) {
+        async function sendToTelegram(title, link, poster, watchLink, format, releaseDate) {
             const telegramBotToken = "7687879889:AAFrS0Z9tDABNefsVrMqCx4-_IYaOw7AroM";
             const telegramChatId = "-1002379902510";
 
             const message = `
                 🎬 *${title}*
+                📅 *Release Date:* ${releaseDate}
                 🔗 [TMDb Link](${link})
-                🖼 [Poster](${poster})
+                🖼 ![Poster](${poster})
                 ▶️ [Watch Here](${watchLink})
                 🎥 *Format:* ${format}
             `;
@@ -73,18 +132,31 @@
             alert("Sent to Telegram!");
         }
 
-        async function sendEmail(title, link, poster, watchLink, format) {
-            const email = "asatkarsarvesh39.titu@blogger.com";
-            const subject = `New Movie: ${title}`;
-            const body = `
-                <h3>${title}</h3>
-                <p><strong>Link:</strong> <a href="${link}">${link}</a></p>
-                <p><strong>Watch Link:</strong> <a href="${watchLink}">${watchLink}</a></p>
-                <p><strong>Format:</strong> ${format}</p>
-                <img src="${poster}" width="200">
-            `;
+        async function postToBlogger(title, link, poster, watchLink, format, releaseDate) {
+            const apiEndpoint = "YOUR_BACKEND_API_ENDPOINT"; // Replace with your backend API endpoint
 
-            window.open(`mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, "_self");
+            const postData = {
+                title: title,
+                link: link,
+                poster: poster,
+                watchLink: watchLink,
+                format: format,
+                releaseDate: releaseDate
+            };
+
+            const response = await fetch(apiEndpoint, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(postData)
+            });
+
+            if (response.ok) {
+                alert("Posted to Blogger!");
+            } else {
+                alert("Failed to post to Blogger.");
+            }
         }
     </script>
 </body>
