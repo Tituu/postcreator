@@ -8,8 +8,8 @@ app.use(express.json());
 app.post('/post-to-blogger', async (req, res) => {
     const { title, link, poster, watchLink, format, releaseDate } = req.body;
 
-    const bloggerApiKey = 'YOUR_BLOGGER_API_KEY';
-    const blogId = 'YOUR_BLOG_ID';
+    const bloggerApiKey = 'AIzaSyDfd1X3EloZnjY-I3COjIhSA3PeOwFJttQ';
+    const blogId = '1359530524392796723';
     const bloggerApiUrl = `https://www.googleapis.com/blogger/v3/blogs/${blogId}/posts/`;
 
     const postData = {
