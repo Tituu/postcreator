@@ -11,8 +11,9 @@ load_dotenv()
 
 app = Flask(__name__)
 
-GMAIL_SMTP_SERVER = os.getenv("smtp.gmail.com")
-GMAIL_SMTP_PORT = int(os.getenv("587"))
+# ✅ Correctly fetch environment variables with a default value
+GMAIL_SMTP_SERVER = os.getenv("GMAIL_SMTP_SERVER", "smtp.gmail.com")
+GMAIL_SMTP_PORT = int(os.getenv("GMAIL_SMTP_PORT", "587"))  # ✅ Fixed error
 GMAIL_USERNAME = os.getenv("titumvposting@gmail.com")
 GMAIL_PASSWORD = os.getenv("zbbkdssscyjmszfy")
 BLOGGER_EMAIL = os.getenv("asatkarsarvesh39.titu@blogger.com")
