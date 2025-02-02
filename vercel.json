@@ -2,14 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "server.js",
+      "src": "server.py",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/post-to-blogger",
-      "dest": "/server.js"
+      "dest": "/server.py"
     }
   ]
 }
