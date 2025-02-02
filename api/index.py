@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="../templates")
 
 # ✅ Correctly fetch environment variables with a default value
 GMAIL_SMTP_SERVER = os.getenv("GMAIL_SMTP_SERVER", "smtp.gmail.com")
@@ -63,7 +63,6 @@ def send_data():
     response = send_email(data["title"], email_content)
     return jsonify(response)
 
-if __name__ == "__main__":
-    # ✅ Use PORT assigned by Koyeb (default to 8080)
-    port = int(os.getenv("PORT", 8080))
-    app.run(host="0.0.0.0", port=port, debug=True)
+# ✅ Serverless function wrapper
+def handler(event, context):
+    return app(event, context)
