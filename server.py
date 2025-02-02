@@ -1,5 +1,4 @@
 import os
-import requests
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -20,7 +19,7 @@ BLOGGER_EMAIL = os.getenv("asatkarsarvesh39.titu@blogger.com")
 
 def send_email(subject, content):
     try:
-        # Set up the SMTP server
+        # Set up SMTP server
         server = smtplib.SMTP(GMAIL_SMTP_SERVER, GMAIL_SMTP_PORT)
         server.starttls()
         server.login(GMAIL_USERNAME, GMAIL_PASSWORD)
@@ -61,4 +60,6 @@ def send_data():
     return jsonify(response)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # ✅ Use PORT assigned by Koyeb (default to 5000 for local testing)
+    port = int(os.getenv("PORT", 8080))
+    app.run(host="0.0.0.0", port=port, debug=True)
