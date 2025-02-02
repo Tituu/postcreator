@@ -1,8 +1,8 @@
+from flask import Flask, request, jsonify, render_template
 import os
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -16,6 +16,10 @@ GMAIL_SMTP_PORT = int(os.getenv("GMAIL_SMTP_PORT", "587"))  # ✅ Fixed error
 GMAIL_USERNAME = os.getenv("titumvposting@gmail.com")
 GMAIL_PASSWORD = os.getenv("zbbkdssscyjmszfy")
 BLOGGER_EMAIL = os.getenv("asatkarsarvesh39.titu@blogger.com")
+
+@app.route("/")
+def index():
+    return render_template("index.html")
 
 def send_email(subject, content):
     try:
@@ -60,6 +64,6 @@ def send_data():
     return jsonify(response)
 
 if __name__ == "__main__":
-    # ✅ Use PORT assigned by Koyeb (default to 5000 for local testing)
+    # ✅ Use PORT assigned by Koyeb (default to 8080)
     port = int(os.getenv("PORT", 8080))
     app.run(host="0.0.0.0", port=port, debug=True)
