@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMDb Movie & Web Series Fetcher</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+        h2 {
+            color: #333;
+        }
+        input[type="text"], input[type="number"] {
+            padding: 10px;
+            font-size: 16px;
+            width: 300px;
+            margin-right: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #movieDetails {
+            margin-top: 20px;
+        }
+        .movie-item {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        .movie-item h3 {
+            margin: 0;
+            color: #333;
+        }
+        .movie-item p {
+            font-size: 14px;
+            color: #555;
+        }
+        .movie-item img {
+            max-width: 100%;
+        }
+        .movie-item button {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Enter TMDb Movie or Web Series ID</h2>
+    <label for="type">Choose Type:</label>
+    <select id="type">
+        <option value="movie">Movie</option>
+        <option value="tv">Web Series</option>
+    </select>
+    <br><br>
+
+    <input type="text" id="tmdbId" placeholder="Enter TMDb ID">
+    <div id="webSeriesDetails" style="display: none;">
+        <label for="season">Season Number:</label>
+        <input type="number" id="seasonNumber" placeholder="Enter Season Number">
+        <label for="episode">Episode Number:</label>
+        <input type="number" id="episodeNumber" placeholder="Enter Episode Number">
+    </div>
+    <button onclick="fetchDetails()">Fetch Details</button>
+
+    <div id="movieDetails"></div>
+
+    <script>
+        document.getElementById('type').addEventListener('change', function() {
+            if (this.value === 'tv') {
+                document.getElementById('webSeriesDetails').style.display = 'block';
+            } else {
+                document.getElementById('webSeriesDetails').style.display = 'none';
+            }
+        });
+
+        async function fetchDetails() {
+            const tmdbId = document.getElementById("tmdbId").value;
+            const type = document.getElementById("type").value;
+
+            if (!tmdbId) {
+                alert("Please enter a valid TMDb ID");
+                return;
+            }
+
+            const tmdbApiKey = "55b11132b5aef36e8376418dcce756f2";
+            let response;
+            let detailsUrl;
+            let movie;
+
+            if (type === 'movie') {
+                detailsUrl = `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${tmdbApiKey}`;
+                response = await fetch(detailsUrl);
+                movie = await response.json();
+            } else if (type === 'tv') {
+                const seasonNumber = document.getElementById("seasonNumber").value;
+                const episodeNumber = document.getElementById("episodeNumber").value;
+                if (!seasonNumber || !episodeNumber) {
+                    alert("Please enter both season and episode numbers.");
+                    return;
+                }
+                detailsUrl = `https://api.themoviedb.org/3/tv/${tmdbId}/season/${seasonNumber}/episode/${episodeNumber}?api_key=${tmdbApiKey}`;
+                response = await fetch(detailsUrl);
+                movie = await response.json();
+            }
+
+            if (movie.success === false) {
+                alert("Invalid TMDb ID");
+                return;
+            }
+
+            const title = movie.name || movie.title; // Web series have `name`, movies have `title`
+            const poster = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+            const link = `https://www.themoviedb.org/${type}/${tmdbId}`;
+            const watchLink = `https://vidsrc.icu/${type}/${tmdbId}`;
+            const releaseDate = movie.release_date || movie.first_air_date || "N/A";
+            const format = "HD"; // Customize as needed
+
+            const movieHtml = `
+                <div class="movie-item">
+                    <h3>${title}</h3>
+                    <img src="${poster}" width="200">
+                    <p><strong>Movie Watch Link:</strong> <a href="${watchLink}" target="_blank">${watchLink}</a></p>
+                    <p><strong>Release Date 📅:</strong> ${releaseDate}</p>
+                    <p><strong>Format:</strong> ${format}</p>
+                    <button onclick='sendToTelegram("${title}", "${watchLink}", "${poster}", "${releaseDate}", "${format}")'>Send to Telegram</button>
+                    <button onclick='sendEmail("${title}", "${link}", "${poster}", "${watchLink}", "${releaseDate}", "${format}")'>Send to Blogger</button>
+                </div>
+            `;
+
+            document.getElementById("movieDetails").innerHTML = movieHtml;
+        }
+
+        async function sendToTelegram(title, watchLink, poster, releaseDate, format) {
+            const telegramBotToken = "7687879889:AAFrS0Z9tDABNefsVrMqCx4-_IYaOw7AroM";
+            const telegramChatId = "-1002379902510";
+
+            const message = `
+                *${title}*
+                *Movie Watch Link:* ${watchLink}
+                *Release Date 📅:* ${releaseDate}
+                *Format:* ${format}
+                [Poster](${poster})
+            `;
+
+            const url = `https://api.telegram.org/bot${telegramBotToken}/sendMessage`;
+            await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    chat_id: telegramChatId,
+                    text: message,
+                    parse_mode: "Markdown"
+                })
+            });
+
+            alert("Sent to Telegram!");
+        }
+
+        async function sendEmail(title, link, poster, watchLink, releaseDate, format) {
+            const email = "asatkarsarvesh39.titu@blogger.com";
+            const subject = `New Movie: ${title}`;
+            const body = `
+                <h3>${title}</h3>
+                <p><strong>Movie Watch Link:</strong> <a href="${watchLink}">${watchLink}</a></p>
+                <p><strong>Release Date 📅:</strong> ${releaseDate}</p>
+                <p><strong>Format:</strong> ${format}</p>
+                <img src="${poster}" width="200">
+            `;
+
+            window.open(`mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, "_self");
+        }
+    </script>
+</body>
+</html>
